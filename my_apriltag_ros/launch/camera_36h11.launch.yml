@@ -1,0 +1,46 @@
+launch:
+- arg:
+    name: device
+    default: "0"
+
+
+- node_container:
+    pkg: rclcpp_components
+    exec: component_container
+    name: apriltag_container
+    namespace: ""
+    composable_node:
+    #- pkg: realsense2_camera
+    #  plugin: realsense2_camera::RealSenseNodeFactory
+    #  name: camera
+    #  namespace: camera
+
+    - pkg: image_proc
+      plugin: image_proc::RectifyNode
+      name: rectify
+      namespace: camera
+      remap:
+      - from: image
+        to: /rgb_camera/image
+      - from: camera_info
+        to: /rgb_camera/camera_info
+      extra_arg:
+      - name: use_intra_process_comms
+        value: "True"
+
+    - pkg: apriltag_ros
+      plugin: AprilTagNode
+      name: my_apriltag
+      namespace: my_apriltag
+      remap:
+      - from: image_rect
+        to: /rgb_camera/image
+      - from: camera_info
+        to: /rgb_camera/camera_info
+
+      param:
+      - from: $(find-pkg-share my_apriltag_ros)/cfg/tags_36h11.yaml
+
+      extra_arg:
+      - name: use_intra_process_comms
+        value: "True"
