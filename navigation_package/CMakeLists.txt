@@ -12,13 +12,17 @@ find_package(ament_cmake REQUIRED)
 # find_package(<dependency> REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(nav2_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(interfaces_assignment_1 REQUIRED)
 
 add_executable(lifecycle src/Lifecycle_node.cpp)
-ament_target_dependencies(lifecycle rclcpp nav2_msgs)
+ament_target_dependencies(lifecycle rclcpp nav2_msgs interfaces_assignment_1)
 
 install(TARGETS
   lifecycle
-  DESTINATION lib/${PROJECT_NAME})
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin)
 
 install(DIRECTORY
   launch
