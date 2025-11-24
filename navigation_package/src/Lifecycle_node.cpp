@@ -2,6 +2,12 @@
 
 //client node
 
+
+
+
+
+
+
 #include "rclcpp/rclcpp.hpp"
 #include "nav2_msgs/srv/manage_lifecycle_nodes.hpp"
 #include "geometry_msgs/msg/pose_with_covariance_stamped.hpp"
