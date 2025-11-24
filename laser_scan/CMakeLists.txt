@@ -10,9 +10,12 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(tf2_ros REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
 
 add_executable(server src/scan_subscriber.cpp)
-ament_target_dependencies(server rclcpp sensor_msgs geometry_msgs)
+ament_target_dependencies(server rclcpp sensor_msgs geometry_msgs tf2 tf2_ros tf2_geometry_msgs)
 
 install(TARGETS
   server
