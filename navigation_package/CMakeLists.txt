@@ -15,8 +15,10 @@ find_package(nav2_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(interfaces_assignment_1 REQUIRED)
 
+
 add_executable(lifecycle src/Lifecycle_node.cpp)
 ament_target_dependencies(lifecycle rclcpp nav2_msgs interfaces_assignment_1)
+
 
 install(TARGETS
   lifecycle
