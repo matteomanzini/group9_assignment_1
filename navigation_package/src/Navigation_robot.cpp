@@ -2,13 +2,13 @@
 #include <geometry_msgs/msg/pose_stamped.hpp>
 
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
-#include <tf2_ros/transform_listener.h> // tf_listener_
-#include <tf2_ros/buffer.h> // tf_buffer_
+#include <tf2_ros/transform_listener.h>
+#include <tf2_ros/buffer.h>
 
 #include <apriltag_msgs/msg/april_tag_detection.hpp>
 #include <apriltag_msgs/msg/april_tag_detection_array.hpp>
 
-#include <map> // geometry_msgs::msg::PoseStamped map_point;
+#include <map> 
 
 #include <nav2_msgs/action/navigate_to_pose.hpp>
 #include <rclcpp_action/rclcpp_action.hpp>
@@ -42,7 +42,7 @@ class NavigationNode : public rclcpp::Node {
 
     bool get_apriltag_pose(int tag_id, geometry_msgs::msg::PoseStamped& pose) {
         std::string tag_frame = "tag36h11:" + std::to_string(tag_id);
-        std::string reference_frame = "external_camera/link/rgb_camera"; //"map";
+        std::string reference_frame = "external_camera/link/rgb_camera";
         
         try {
             geometry_msgs::msg::TransformStamped transform_stamped = tf_buffer_->lookupTransform(reference_frame, tag_frame, tf2::TimePointZero);
@@ -53,11 +53,13 @@ class NavigationNode : public rclcpp::Node {
             pose.pose.position.y = transform_stamped.transform.translation.y;
             pose.pose.position.z = transform_stamped.transform.translation.z;
             pose.pose.orientation = transform_stamped.transform.rotation;
+
+            RCLCPP_INFO(this->get_logger(), "Conversion coordinates with respect to external camera frame!");
             
             return true;
         }
         catch(const tf2::TransformException &e) {
-            RCLCPP_WARN(this->get_logger(), "Impossibile ottenere TF per tag %d: %s", tag_id, e.what());
+            RCLCPP_WARN(this->get_logger(), "Impossible conversion to TF for tag %d: %s", tag_id, e.what());
             return false;
         }
     }
@@ -89,19 +91,19 @@ class NavigationNode : public rclcpp::Node {
         goal_point.pose.position.y = 0;
         goal_point.pose.position.z = 0;
 
-        for(const auto& pair : map_apriltags) {
+        for(const auto& apriltag : map_apriltags) {
 
-            auto point = pair.second;
+            auto point = apriltag.second;
             geometry_msgs::msg::PoseStamped transformed_point_to_map_;
+            RCLCPP_INFO(this->get_logger(), " Apriltag %d orginal coordinates: x=%.2f, y=%.2f, z=%.2f", apriltag.first, point.pose.position.x, point.pose.position.y, point.pose.position.z);
 
             try {
-
                 // TRASFORMATION IN MAP
                 geometry_msgs::msg::TransformStamped transform_stamped_to_map = tf_buffer_->lookupTransform("map", point.header.frame_id, tf2::TimePointZero);
                 tf2::doTransform(point, transformed_point_to_map_, transform_stamped_to_map);
             }
             catch(const tf2::TransformException &e) {
-                RCLCPP_ERROR(this->get_logger(), "Error: %s", e.what());
+                RCLCPP_ERROR(this->get_logger(), " Error: %s", e.what());
                 return;
             }
 
@@ -109,17 +111,17 @@ class NavigationNode : public rclcpp::Node {
             goal_point.pose.position.y += transformed_point_to_map_.pose.position.y;
             goal_point.pose.position.z += transformed_point_to_map_.pose.position.z;
 
-            RCLCPP_INFO(this->get_logger(), "  Tag ID %d in MAP: x=%.2f, y=%.2f, z=%.2f", pair.first, transformed_point_to_map_.pose.position.x, transformed_point_to_map_.pose.position.y, transformed_point_to_map_.pose.position.z);
+            RCLCPP_INFO(this->get_logger(), " Tag ID %d in MAP: x=%.2f, y=%.2f, z=%.2f", apriltag.first, transformed_point_to_map_.pose.position.x, transformed_point_to_map_.pose.position.y, transformed_point_to_map_.pose.position.z);
         }
 
         goal_point.header.frame_id = "map";
         goal_point.header.stamp = this->now();
         goal_point.pose.position.x = goal_point.pose.position.x/2;
         goal_point.pose.position.y = goal_point.pose.position.y/2;
-        goal_point.pose.position.z = 0;  // goal_point.pose.position.z/2;
+        goal_point.pose.position.z = 0;
         goal_point.pose.orientation.w = 1;
 
-        RCLCPP_INFO(this->get_logger(), "Middle point in MAP: x=%.2f, y=%.2f, z=%.2f", goal_point.pose.position.x, goal_point.pose.position.y, goal_point.pose.position.z);
+        RCLCPP_INFO(this->get_logger(), " Middle point in MAP: x=%.2f, y=%.2f, z=%.2f", goal_point.pose.position.x, goal_point.pose.position.y, goal_point.pose.position.z);
 
         robot_navigation();
     }
@@ -127,7 +129,7 @@ class NavigationNode : public rclcpp::Node {
     void robot_navigation(){
         
         if (!navigation_->wait_for_action_server(std::chrono::seconds(5))) {
-            RCLCPP_ERROR(this->get_logger(), "Not available 'navigate_to_pose' server");
+            RCLCPP_ERROR(this->get_logger(), " Not available 'navigate_to_pose' node");
             return;
         }
         
@@ -140,20 +142,20 @@ class NavigationNode : public rclcpp::Node {
         send_goal_options.result_callback = [this](const rclcpp_action::ClientGoalHandle<nav2_msgs::action::NavigateToPose>::WrappedResult& result) {
             end_nav = this->now();
             if(result.code == rclcpp_action::ResultCode::SUCCEEDED){
-                RCLCPP_INFO(this->get_logger(), "The goal is reached!");
-                RCLCPP_INFO(this->get_logger(), "Time of navigation: %.2f seconds", (end_nav - start_nav).seconds());
+                RCLCPP_INFO(this->get_logger(), " The goal is reached!");
+                RCLCPP_INFO(this->get_logger(), " Time of navigation: %.2f seconds", (end_nav - start_nav).seconds());
                 return;
             }
             else if(result.code == rclcpp_action::ResultCode::ABORTED){
-                RCLCPP_ERROR(this->get_logger(), "Navigation aborted!");
+                RCLCPP_ERROR(this->get_logger(), " Navigation aborted!");
                 return;
             }
             else if(result.code == rclcpp_action::ResultCode::CANCELED){
-                RCLCPP_WARN(this->get_logger(), "Navigation canceled!");
+                RCLCPP_WARN(this->get_logger(), " Navigation canceled!");
                 return;
             }
             else{
-                RCLCPP_WARN(this->get_logger(), "Navigation failed!");
+                RCLCPP_WARN(this->get_logger(), " Navigation failed!");
                 return;
             }
         };
