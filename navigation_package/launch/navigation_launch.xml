@@ -1,6 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <launch>
-  <node pkg="navigation_package" exec="lifecycle" >
-    <param name="autostart" value="true" /> 
-    <param name="managed_nodes" value="[/map_server, /amcl, /bt_navigator, /controller_server, /planner_server]" />
-  </node>
+  <node pkg="navigation_package" exec="lifecycle" exec="transformtag"/>
+  
 </launch>
