@@ -14,6 +14,7 @@
   <depend>apriltag_msgs</depend>
   <depend>sensor_msgs</depend>
   <depend>geometry_msgs</depend>
+  <depend>interfaces_assignment_1</depend>
   
   <exec_depend>ros2launch</exec_depend>
   <test_depend>ament_lint_auto</test_depend>
