@@ -11,26 +11,27 @@ find_package(ament_cmake REQUIRED)
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(nav_msgs REQUIRED)
 find_package(nav2_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(interfaces_assignment_1 REQUIRED)
 find_package(tf2 REQUIRED)
+find_package(tf2_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(apriltag_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 
 add_executable(lifecycle src/Lifecycle_node.cpp)
-ament_target_dependencies(lifecycle rclcpp nav2_msgs interfaces_assignment_1)
+ament_target_dependencies(lifecycle rclcpp nav2_msgs tf2_ros tf2_msgs tf2_geometry_msgs interfaces_assignment_1)
+
 add_executable(navigationrobot src/Navigation_robot.cpp)
 ament_target_dependencies(navigationrobot rclcpp geometry_msgs tf2 tf2_ros tf2_geometry_msgs nav2_msgs apriltag_msgs sensor_msgs)
 
 install(TARGETS
   navigationrobot
   lifecycle
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib
-  RUNTIME DESTINATION bin)
+  DESTINATION lib/${PROJECT_NAME})
 
 install(DIRECTORY
   launch
