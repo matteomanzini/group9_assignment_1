@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+
+  <arg name="device" default="0" />
+
+  <node pkg="rclcpp_components"
+        exec="component_container"
+        name="apriltag_container"
+        output="screen" />
+
+  <set_parameters_from_file filename="$(find-pkg-share my_apriltag_ros)/cfg/tags_36h11.yaml" />
+
+  <load_composable_node target="apriltag_container">
+    <composable_node pkg="image_proc"
+                     plugin="image_proc::RectifyNode"
+                     name="rectify"
+                     namespace="camera">
+      <remap from="image" to="/rgb_camera/image" />
+      <remap from="camera_info" to="/rgb_camera/camera_info" />
+      <extra_arg name="use_intra_process_comms" value="true" />
+    </composable_node>
+
+    <composable_node pkg="apriltag_ros"
+                     plugin="AprilTagNode"
+                     name="my_apriltag"
+                     namespace="my_apriltag">
+      <remap from="image_rect" to="/rgb_camera/image" />
+      <remap from="camera_info" to="/rgb_camera/camera_info" />
+      <extra_arg name="use_intra_process_comms" value="true" />
+    </composable_node>
+  </load_composable_node>
+
+</launch>

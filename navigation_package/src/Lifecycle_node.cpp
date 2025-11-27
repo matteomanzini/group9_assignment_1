@@ -130,14 +130,13 @@ class Lifecycle_node : public rclcpp::Node
         
         navigation_ptr->async_send_request(request, [this](rclcpp::Client<nav2_msgs::srv::ManageLifecycleNodes>::SharedFuture future)
         {
-            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
             try
             {
                 auto response = future.get();
                 if (response->success) 
                 {
                     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "navigation activated successfully");
-                    odom_sub.reset();
+                    
                     this->publish_ready_msg(true);
                 }else
                 {
@@ -150,7 +149,7 @@ class Lifecycle_node : public rclcpp::Node
                 this->publish_ready_msg(false);
             }
         });
-
+        odom_sub.reset();
         return;
     }
 
