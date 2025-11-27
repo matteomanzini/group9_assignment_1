@@ -14,11 +14,15 @@ find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 
-add_executable(server src/scan_subscriber.cpp)
-ament_target_dependencies(server rclcpp sensor_msgs geometry_msgs tf2 tf2_ros tf2_geometry_msgs)
+add_executable(laser src/scan_subscriber.cpp)
+ament_target_dependencies(laser rclcpp sensor_msgs geometry_msgs tf2 tf2_ros tf2_geometry_msgs)
 
 install(TARGETS
-  server
+  laser
   DESTINATION lib/${PROJECT_NAME})
+
+install(DIRECTORY
+  launch
+  DESTINATION share/${PROJECT_NAME})
 
 ament_package()

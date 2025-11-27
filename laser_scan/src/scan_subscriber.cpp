@@ -130,9 +130,9 @@ int main(int argc, char **argv)
 {
   rclcpp::init(argc, argv);
 
-  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("server");
+  std::shared_ptr<rclcpp::Node> node = std::make_shared<ScanSubscriber>();
   
-  rclcpp::spin(std::make_shared<ScanSubscriber>());
+  rclcpp::spin(node);
 
   rclcpp::shutdown();
 }
