@@ -26,7 +26,7 @@ add_executable(lifecycle src/Lifecycle_node.cpp)
 ament_target_dependencies(lifecycle rclcpp nav2_msgs tf2_ros tf2_msgs tf2_geometry_msgs interfaces_assignment_1)
 
 add_executable(navigationrobot src/Navigation_robot.cpp)
-ament_target_dependencies(navigationrobot rclcpp geometry_msgs tf2 tf2_ros tf2_geometry_msgs nav2_msgs apriltag_msgs sensor_msgs)
+ament_target_dependencies(navigationrobot rclcpp geometry_msgs tf2 tf2_ros tf2_geometry_msgs nav2_msgs apriltag_msgs sensor_msgs interfaces_assignment_1)
 
 install(TARGETS
   navigationrobot

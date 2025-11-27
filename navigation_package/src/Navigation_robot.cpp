@@ -1,14 +1,15 @@
 #include <rclcpp/rclcpp.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
+#include "interfaces_assignment_1/msg/ready.hpp"
 
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
-#include <tf2_ros/transform_listener.h> // tf_listener_
-#include <tf2_ros/buffer.h> // tf_buffer_
+#include <tf2_ros/transform_listener.h>
+#include <tf2_ros/buffer.h>
 
 #include <apriltag_msgs/msg/april_tag_detection.hpp>
 #include <apriltag_msgs/msg/april_tag_detection_array.hpp>
 
-#include <map> // geometry_msgs::msg::PoseStamped map_point;
+#include <map>
 #include <math.h>
 
 #include <nav2_msgs/action/navigate_to_pose.hpp>
@@ -24,6 +25,11 @@ class NavigationNode : public rclcpp::Node {
 
         // Subscription per AprilTag detections
         subscription_ = this->create_subscription<apriltag_msgs::msg::AprilTagDetectionArray>("/my_apriltag/detections", 10, std::bind(&NavigationNode::start_navigation_callback, this, std::placeholders::_1));
+        subscription_ready_msg_ = this->create_subscription<interfaces_assignment_1::msg::Ready>("/ready", 10, std::bind(&NavigationNode::ready_callback, this, std::placeholders::_1));
+        /*timer_ready = this->create_wall_timer(
+            std::chrono::seconds(1),
+            std::bind(&NavigationNode::timer_ready_msg, this)
+        );*/
 
         // path_subscription_ = this->create_subscription<nav_msgs::msg::Odometry>("/odom", 10, std::bind(&NavigationNode::update_callback, this, std::placeholders::_1));
 
@@ -31,6 +37,7 @@ class NavigationNode : public rclcpp::Node {
 
         fill_map = false;
         navigation_active = false;
+        ready = false;
         index1 = 0;
         index10 = 0;
         final_point1.header.frame_id = "map";
@@ -45,27 +52,30 @@ class NavigationNode : public rclcpp::Node {
     
     private:
     rclcpp::Subscription<apriltag_msgs::msg::AprilTagDetectionArray>::SharedPtr subscription_;
+    rclcpp::Subscription<interfaces_assignment_1::msg::Ready>::SharedPtr subscription_ready_msg_;
     // rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr path_subscription_;
     rclcpp_action::Client<nav2_msgs::action::NavigateToPose>::SharedPtr navigation_;
     std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
     std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
     
     bool fill_map; // first time that compute the transforations
-    bool navigation_active;
+    bool navigation_active; // true if the robot is in navigation
+    bool ready; 
     
     std::map<int, geometry_msgs::msg::PoseStamped> map_apriltags; // the coordinates are respect to the map
-    std::map<int, geometry_msgs::msg::PoseStamped> mean_finalpoint;
-    geometry_msgs::msg::PoseStamped goal_point;
-    geometry_msgs::msg::PoseStamped final_point;
-    geometry_msgs::msg::PoseStamped final_point1;
-    geometry_msgs::msg::PoseStamped final_point10;
-    int index1;
-    int index10;
+    std::map<int, geometry_msgs::msg::PoseStamped> mean_finalpoint; //  mean point between two apriltags
+    geometry_msgs::msg::PoseStamped goal_point; // initial goal point
+    geometry_msgs::msg::PoseStamped final_point; // final goal point
+    geometry_msgs::msg::PoseStamped final_point1; // mean point of id's point 1
+    geometry_msgs::msg::PoseStamped final_point10; // mean point of id's point 10
+    int index1; // number of id points 1 
+    int index10; // number of id points 10
     rclcpp_action::Client<nav2_msgs::action::NavigateToPose>::SendGoalOptions send_goal_options;
     
     // time of execution
     rclcpp::Time start_nav;
     rclcpp::Time end_nav;
+    // rclcpp::TimerBase::SharedPtr timer_ready;
 
     // COMPUTE THE DISTANCE BETWEEN TWO POINTS FROM SAME FRAME
     float getDistance(geometry_msgs::msg::PoseStamped point1, geometry_msgs::msg::PoseStamped point2){
@@ -79,7 +89,7 @@ class NavigationNode : public rclcpp::Node {
             dist = std::sqrt(dist_x*dist_x + dist_y*dist_y + dist_z*dist_z);
         }
         else{
-            RCLCPP_ERROR(this->get_logger(), "Different frames for two points");
+            RCLCPP_ERROR(this->get_logger(), "Different frames for two points!");
         }
 
         return dist;
@@ -96,7 +106,7 @@ class NavigationNode : public rclcpp::Node {
             tf2::doTransform(started_point, output, transform_stamped_to_map);
         }
         catch(const tf2::TransformException &e) {
-            RCLCPP_ERROR(this->get_logger(), "Error: %s", e.what());
+            RCLCPP_ERROR(this->get_logger(), "Error ! Impossible to transform to map frame: %s", e.what());
         }
 
         return output;
@@ -119,7 +129,7 @@ class NavigationNode : public rclcpp::Node {
             goal.pose.position.y += point.pose.position.y;
             goal.pose.position.z += point.pose.position.z;
 
-            RCLCPP_INFO(this->get_logger(), "  Tag ID %d in MAP: x = %.2f, y = %.2f, z = %.2f", pair.first, point.pose.position.x, point.pose.position.y, point.pose.position.z);
+            RCLCPP_INFO(this->get_logger(), "Tag ID %d in MAP: x = %.2f, y = %.2f, z = %.2f", pair.first, point.pose.position.x, point.pose.position.y, point.pose.position.z);
         }
 
         goal.header.frame_id = "map";
@@ -157,7 +167,7 @@ class NavigationNode : public rclcpp::Node {
         // if the distance to goal is less than 0.05 meter, recompute the goal point
         if(dist_between_goals > 0.05){
 
-            RCLCPP_INFO(this->get_logger(), " The goal is changed! New goal is: x = %.2f, y = %.2f", final_point.pose.position.x, final_point.pose.position.y);
+            RCLCPP_INFO(this->get_logger(), "The goal is changed! New goal is: x = %.2f, y = %.2f", final_point.pose.position.x, final_point.pose.position.y);
 
             return true;
         }
@@ -183,12 +193,34 @@ class NavigationNode : public rclcpp::Node {
             return true;
         }
         catch(const tf2::TransformException &e) {
-            RCLCPP_WARN(this->get_logger(), " Impossible obtain TF for tag %d: %s", tag_id, e.what());
+            RCLCPP_WARN(this->get_logger(), "Impossible obtain TF for tag %d: %s", tag_id, e.what());
             return false;
         }
     }
 
+    void ready_callback(const interfaces_assignment_1::msg::Ready::SharedPtr message){
+        
+        ready = message->ready.data;
+        RCLCPP_INFO(this->get_logger(), "The current value of ready is: %d!", ready);
+
+    }
+    
+    /*void timer_ready_msg(){
+
+        if(ready){
+            RCLCPP_INFO(this->get_logger(), "The robot is ready for the navigation!");
+        }
+        else{
+            RCLCPP_WARN(this->get_logger(), "The robot is not ready for the navigation!");
+        }
+    }*/
+
     void start_navigation_callback(const apriltag_msgs::msg::AprilTagDetectionArray::SharedPtr message){
+        
+        if(!ready){
+            RCLCPP_WARN(this->get_logger(), "Navigation stopped! Try later.");
+            return;
+        }
 
         for(auto &det : message->detections) {
             int id = det.id;
@@ -197,7 +229,7 @@ class NavigationNode : public rclcpp::Node {
             bool conv_to_pose = get_apriltag_pose(id, point);
             
             if (conv_to_pose == false) {
-                RCLCPP_WARN(this->get_logger(), " Wrong conversion!");
+                RCLCPP_WARN(this->get_logger(), "Wrong conversion!");
                 continue;
             }
 
@@ -218,7 +250,7 @@ class NavigationNode : public rclcpp::Node {
             // if it is the first time that the map has two elements
             if(map_apriltags.size() == 2 && !fill_map){
                 fill_map = true;
-                RCLCPP_INFO(this->get_logger(), " Set for the first time the goal!");
+                RCLCPP_INFO(this->get_logger(), "Set the goal for the first time!");
                 goal_point = compute_goal_point();
                 robot_navigation(goal_point);
             }
@@ -246,17 +278,16 @@ class NavigationNode : public rclcpp::Node {
             navigation_active = false;
 
             if(result.code == rclcpp_action::ResultCode::SUCCEEDED){
-                RCLCPP_INFO(this->get_logger(), " The goal is reached! The goal point is: x = %.2f, y = %.2f!", goal_point.pose.position.x, goal_point.pose.position.y);
-                RCLCPP_INFO(this->get_logger(), " Time of navigation: %.2f seconds", (end_nav - start_nav).seconds());
-                // RCLCPP_INFO(this->get_logger(), " Distance of navigation: %.2f meters", total_dist);
+                RCLCPP_INFO(this->get_logger(), "The goal is reached! The goal point is: x = %.2f, y = %.2f!", goal_point.pose.position.x, goal_point.pose.position.y);
+                RCLCPP_INFO(this->get_logger(), "Time of navigation: %.2f seconds", (end_nav - start_nav).seconds());
 
                 if(recompute_goal()){
-                    RCLCPP_WARN(this->get_logger(), " The goal is changed!");
+                    RCLCPP_WARN(this->get_logger(), "The goal is changed!");
                     goal_point = final_point;
                     robot_navigation(goal_point);
                 }
                 else{
-                    RCLCPP_INFO(this->get_logger(), " Final goal is confermed!");
+                    RCLCPP_INFO(this->get_logger(), "Final goal is confermed!");
                 }
 
                 return;
@@ -266,11 +297,11 @@ class NavigationNode : public rclcpp::Node {
                 return;
             }
             else if(result.code == rclcpp_action::ResultCode::CANCELED){
-                RCLCPP_WARN(this->get_logger(), "Navigation canceled for the point x = %.2f, y = %.2f!", goal_point.pose.position.x, goal_point.pose.position.y);
+                RCLCPP_WARN(this->get_logger(), "Navigation canceled for the point x = %.2f, y = %.2f after time %.2f seconds!", goal_point.pose.position.x, goal_point.pose.position.y, (end_nav - start_nav).seconds());
                 return;
             }
             else{
-                RCLCPP_WARN(this->get_logger(), "Navigation stopped for the point x = %.2f, y = %.2f!", goal_point.pose.position.x, goal_point.pose.position.y);
+                RCLCPP_WARN(this->get_logger(), "Navigation stopped for the point x = %.2f, y = %.2f after time %.2f seconds!", goal_point.pose.position.x, goal_point.pose.position.y, (end_nav - start_nav).seconds());
                 return;
             }
         };
