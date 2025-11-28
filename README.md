@@ -26,7 +26,7 @@ The project is implemented by five ROS2 packages:
 : computes the coordinates and the four corners of two apriltags respect to the external camera. The data are used to compute the final goal pose.
 
 **4. my_launch**
-: contains the main lauch file `start_launch.xml`. It launches all single launch files `navigation_launch.xml`, `camera_36h11_launch.xml`, `assignment_1.launch.py` and `laser_launch.xml` with respect to a given order.
+: contains the main launch file `start_launch.xml`. It launches all single launch files `navigation_launch.xml`, `camera_36h11_launch.xml`, `assignment_1.launch.py` and `laser_launch.xml` with respect to a given order.
 
 **5. navigation_package**
 : contains navigation_node and lyfecycle_client nodes.
