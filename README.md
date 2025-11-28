@@ -80,9 +80,11 @@ colcon build
 
 ```
 source install/setup.bash
+```
 
 at the end of your .bashrc add:
 
+```
 export ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST
 ```
 
