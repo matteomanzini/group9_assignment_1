@@ -24,14 +24,9 @@ class NavigationNode : public rclcpp::Node {
         tf_listener_ = std::make_unique<tf2_ros::TransformListener>(*tf_buffer_);
 
         // Subscription per AprilTag detections
-        subscription_ = this->create_subscription<apriltag_msgs::msg::AprilTagDetectionArray>("/my_apriltag/detections", 10, std::bind(&NavigationNode::start_navigation_callback, this, std::placeholders::_1));
         subscription_ready_msg_ = this->create_subscription<interfaces_assignment_1::msg::Ready>("/ready", 10, std::bind(&NavigationNode::ready_callback, this, std::placeholders::_1));
-        /*timer_ready = this->create_wall_timer(
-            std::chrono::seconds(1),
-            std::bind(&NavigationNode::timer_ready_msg, this)
-        );*/
-
-        // path_subscription_ = this->create_subscription<nav_msgs::msg::Odometry>("/odom", 10, std::bind(&NavigationNode::update_callback, this, std::placeholders::_1));
+        
+        subscription_ = this->create_subscription<apriltag_msgs::msg::AprilTagDetectionArray>("/my_apriltag/detections", 10, std::bind(&NavigationNode::start_navigation_callback, this, std::placeholders::_1));
 
         navigation_ = rclcpp_action::create_client<nav2_msgs::action::NavigateToPose>(this, "navigate_to_pose");
 
@@ -53,14 +48,13 @@ class NavigationNode : public rclcpp::Node {
     private:
     rclcpp::Subscription<apriltag_msgs::msg::AprilTagDetectionArray>::SharedPtr subscription_;
     rclcpp::Subscription<interfaces_assignment_1::msg::Ready>::SharedPtr subscription_ready_msg_;
-    // rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr path_subscription_;
     rclcpp_action::Client<nav2_msgs::action::NavigateToPose>::SharedPtr navigation_;
     std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
     std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
     
     bool fill_map; // first time that compute the transforations
     bool navigation_active; // true if the robot is in navigation
-    bool ready; 
+    bool ready;
     
     std::map<int, geometry_msgs::msg::PoseStamped> map_apriltags; // the coordinates are respect to the map
     std::map<int, geometry_msgs::msg::PoseStamped> mean_finalpoint; //  mean point between two apriltags
@@ -75,7 +69,6 @@ class NavigationNode : public rclcpp::Node {
     // time of execution
     rclcpp::Time start_nav;
     rclcpp::Time end_nav;
-    // rclcpp::TimerBase::SharedPtr timer_ready;
 
     // COMPUTE THE DISTANCE BETWEEN TWO POINTS FROM SAME FRAME
     float getDistance(geometry_msgs::msg::PoseStamped point1, geometry_msgs::msg::PoseStamped point2){
@@ -200,25 +193,17 @@ class NavigationNode : public rclcpp::Node {
 
     void ready_callback(const interfaces_assignment_1::msg::Ready::SharedPtr message){
         
-        ready = message->ready.data;
-        RCLCPP_INFO(this->get_logger(), "The current value of ready is: %d!", ready);
+        if(!ready){
+            ready = message->ready.data;
+            RCLCPP_INFO(this->get_logger(), "The current value of ready is: %d!", ready);
+        }
 
     }
-    
-    /*void timer_ready_msg(){
-
-        if(ready){
-            RCLCPP_INFO(this->get_logger(), "The robot is ready for the navigation!");
-        }
-        else{
-            RCLCPP_WARN(this->get_logger(), "The robot is not ready for the navigation!");
-        }
-    }*/
 
     void start_navigation_callback(const apriltag_msgs::msg::AprilTagDetectionArray::SharedPtr message){
         
         if(!ready){
-            RCLCPP_WARN(this->get_logger(), "Navigation stopped! Try later.");
+            RCLCPP_WARN(this->get_logger(), "Robot is not ready for navigation!");
             return;
         }
 
@@ -259,10 +244,10 @@ class NavigationNode : public rclcpp::Node {
 
     void robot_navigation(geometry_msgs::msg::PoseStamped goal){
         
-        /*if (!navigation_->wait_for_action_server(std::chrono::seconds(5))) {
+        if (!navigation_->wait_for_action_server(std::chrono::seconds(5))) {
             RCLCPP_ERROR(this->get_logger(), "Not available 'navigate_to_pose' server");
             return;
-        }*/
+        }
 
         navigation_active = true;
         
