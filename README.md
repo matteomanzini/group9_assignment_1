@@ -19,13 +19,13 @@ The project is implemented by five ROS2 packages:
 : defines Ready.msg to advice if the robot is ready to compute the navigation. If the variable `std_msgs/Bool ready` is true, robot can move; false otherwise.
 
 **2. laser_scan**
-: technique to detect three cylindrical tables. The node scan_subcriber publish their position by clustering the points of laser and filtering them based on a range of acceptable distances.
+: technique to detect three cylindrical tables. The node `scan_subcriberes` publish their position by clustering the points of laser scan and filtering them based on a range of acceptable distances.
 
 **3. my_apriltag_ros**
-: computes the coordinates and the four corners of two apriltags respect to the camera. The data are used to compute the final goal pose.
+: computes the coordinates and the four corners of two apriltags respect to the external camera. The data are used to compute the final goal pose.
 
 **4. my_launch**
-: contains the main lauch file `start_launch.xml`. It contains all single launch files of all the packages.
+: contains the main lauch file `start_launch.xml`. It launches all single launch files of all the packages.
 
 **5. navigation_package**
 : contains lyfecycle_client and navigation_node nodes.
