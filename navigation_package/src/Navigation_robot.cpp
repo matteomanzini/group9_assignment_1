@@ -171,7 +171,7 @@ class NavigationNode : public rclcpp::Node {
     bool get_apriltag_pose(int tag_id, geometry_msgs::msg::PoseStamped& pose) {
 
         std::string tag_frame = "tag36h11:" + std::to_string(tag_id);
-        std::string reference_frame = "external_camera/link/rgb_camera"; //"map";
+        std::string reference_frame = "external_camera/link/rgb_camera";
         
         try {
             geometry_msgs::msg::TransformStamped transform_stamped = tf_buffer_->lookupTransform(reference_frame, tag_frame, tf2::TimePointZero);
