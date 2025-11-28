@@ -16,7 +16,7 @@ There are three important phases:
 The project is implemented by five ROS2 packages:
 
 **1. interfaces_assignment_1**
-: defines Ready.msg to advice if the robot is ready to compute the navigation. If the variable '''std_msgs/Bool ready''' is true, robot can move; false otherwise.
+: defines Ready.msg to advice if the robot is ready to compute the navigation. If the variable `std_msgs/Bool` ready is true, robot can move; false otherwise.
 
 **2. laser_scan**
 : technique to detect three cylindrical tables. The node scan_subcriber identifies their position by clustering the points of laser and filtering them based on a range of acceptable distances.
