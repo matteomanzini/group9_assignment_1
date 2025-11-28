@@ -16,7 +16,7 @@ There are three important phases:
 The project is implemented by five ROS2 packages:
 
 **1. interfaces_assignment_1**
-: it defines Ready.msg to advice if the robot is ready to compute the navigation.
+: defines Ready.msg to advice if the robot is ready to compute the navigation. If the variable '''std_msgs/Bool ready''' is true, robot can move; false otherwise.
 
 **2. laser_scan**
 : technique to detect three cylindrical tables. The node scan_subcriber identifies their position by clustering the points of laser and filtering them based on a range of acceptable distances.
@@ -26,6 +26,6 @@ The project is implemented by five ROS2 packages:
 **4. my_launch**
 
 **5. navigation_package**
-: the package contains two nodes: lyfecycle_client and navigation_node.
+: contains lyfecycle_client and navigation_node nodes.
 The first one defines the initial pose of robot and notify the navigation_node if robot is ready to move with Ready.msg.
 The second one computes the goal position (in the middle of apriltags) and startups the navigation until final goal is reached.
