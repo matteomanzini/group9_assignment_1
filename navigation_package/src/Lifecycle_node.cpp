@@ -13,7 +13,8 @@
 #include "tf2_ros/transform_listener.h"
 #include "tf2_ros/buffer.h"
 
-#include "interfaces_assignment_1/msg/ready.hpp"
+//#include "interfaces_assignment_1/msg/ready.hpp"
+#include "interfaces_assignment_1/srv/ready.hpp"
 
 #include <chrono>
 //#include <random>
@@ -32,11 +33,13 @@ class Lifecycle_node : public rclcpp::Node
         localization_ptr = this->create_client<nav2_msgs::srv::ManageLifecycleNodes>("/lifecycle_manager_localization/manage_nodes");
         navigation_ptr = this->create_client<nav2_msgs::srv::ManageLifecycleNodes>("/lifecycle_manager_navigation/manage_nodes");
         initial_pose_pub = this->create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>("/initialpose", 10);
-        ready_pub = this->create_publisher<interfaces_assignment_1::msg::Ready>("/ready",10);
         odom_sub = this->create_subscription<nav_msgs::msg::Odometry>("/odom",10, std::bind(&Lifecycle_node::odom_callback, this, std::placeholders::_1));
-
+        ready_service = this->create_service<interfaces_assignment_1::srv::Ready>("ready", std::bind(&Lifecycle_node::ready_callback, this, std::placeholders::_1, std::placeholders::_2));
+        
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Lifecycle node initialized");
+        
         initialpose_sent = false;
+        ready = false;
         
     }
     
@@ -75,7 +78,8 @@ class Lifecycle_node : public rclcpp::Node
         while (!(localization_ptr)->wait_for_service()) {
             if (!rclcpp::ok()) {
                 RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Interrupted while waiting for the localization service. Exiting.");
-                this->publish_ready_msg(false);
+                //this->publish_ready_msg(false);
+                ready = false;
                 return;
             }
             RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Localization service not available, waiting again...");
@@ -95,12 +99,14 @@ class Lifecycle_node : public rclcpp::Node
                 }else 
                 {
                     RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Failed to call service Localization");
-                    this->publish_ready_msg(false);
+                    //this->publish_ready_msg(false);
+                    ready = false;
                 }
             }catch (const std::exception& e)
             {
                 RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Exception in localization: %s", e.what());
-                this->publish_ready_msg(false);
+                //this->publish_ready_msg(false);
+                ready = false;
             }
         });
 
@@ -121,7 +127,8 @@ class Lifecycle_node : public rclcpp::Node
         while (!(navigation_ptr)->wait_for_service()) {
             if (!rclcpp::ok()) {
                 RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Interrupted while waiting for the navigation service. Exiting.");
-                this->publish_ready_msg(false);
+                //this->publish_ready_msg(false);
+                ready = false;
                 return;
             }
             RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Navigation service not available, waiting again...");
@@ -136,23 +143,26 @@ class Lifecycle_node : public rclcpp::Node
                 if (response->success) 
                 {
                     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "navigation activated successfully");
-                    
-                    this->publish_ready_msg(true);
+                    //this->publish_ready_msg(true);
+                    ready = true;
                 }else
                 {
                     RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Failed to call service navigation");
-                    this->publish_ready_msg(false);
+                    //this->publish_ready_msg(false);
+                    ready = false;
                 }
             }catch(const std::exception& e)
             {
                 RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Exception in navigation: %s", e.what());
-                this->publish_ready_msg(false);
+                //this->publish_ready_msg(false);
+                ready = false;
             }
         });
         odom_sub.reset();
         return;
     }
 
+    /*
     void publish_ready_msg(bool ready)
     {
         auto message = interfaces_assignment_1::msg::Ready();
@@ -167,16 +177,28 @@ class Lifecycle_node : public rclcpp::Node
             RCLCPP_ERROR(this->get_logger(), "Nav2 bringup sequence failed!");
         }
     }
+    */
+
+    void ready_callback(const std::shared_ptr<interfaces_assignment_1::srv::Ready::Request> request, 
+                            std::shared_ptr<interfaces_assignment_1::srv::Ready::Response> response)
+    {
+        if(request->req == "") 
+            response->ready.data = ready;
+        return;
+    }
     
     rclcpp::Client<nav2_msgs::srv::ManageLifecycleNodes>::SharedPtr localization_ptr;
     rclcpp::Client<nav2_msgs::srv::ManageLifecycleNodes>::SharedPtr navigation_ptr;
     rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr initial_pose_pub;
-    rclcpp::Publisher<interfaces_assignment_1::msg::Ready>::SharedPtr ready_pub;
+    //rclcpp::Publisher<interfaces_assignment_1::msg::Ready>::SharedPtr ready_pub;
     rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub;
     std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
     std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
     bool initialpose_sent;
+    bool ready;
     //rclcpp::TimerBase::SharedPtr retry_timer_;
+    
+    rclcpp::Service<interfaces_assignment_1::srv::Ready>::SharedPtr ready_service;
 };
 
 int main(int argc, char ** argv)

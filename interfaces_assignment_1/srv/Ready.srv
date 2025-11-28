@@ -1,0 +1,3 @@
+string req
+---
+std_msgs/Bool ready

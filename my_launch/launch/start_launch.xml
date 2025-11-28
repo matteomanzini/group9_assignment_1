@@ -1,8 +1,10 @@
 <launch>
     <include file="$(find-pkg-share navigation_package)/launch/navigation_launch.xml"/>
-    <include file="$(find-pkg-share my_apriltag_ros)/launch/camera_36h11_launch.xml"/>
+    <timer period="1.0">
+        <include file="$(find-pkg-share my_apriltag_ros)/launch/camera_36h11_launch.xml"/>
+    </timer>
     <timer period="1.0">
         <include file="$(find-pkg-share ir_launch)/launch/assignment_1.launch.py"/>
     </timer>
-    <include file="$(find-pkg-share laser_scan)/launch/laser_launch.xml"/> 
+    <include file="$(find-pkg-share laser_scan)/launch/laser_launch.xml"/>
 </launch>

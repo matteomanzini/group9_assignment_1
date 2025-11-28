@@ -1,6 +1,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include "interfaces_assignment_1/msg/ready.hpp"
+#include "interfaces_assignment_1/srv/ready.hpp"
 
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include <tf2_ros/transform_listener.h>
@@ -11,10 +12,13 @@
 
 #include <map>
 #include <math.h>
+#include <chrono>
 
 #include <nav2_msgs/action/navigate_to_pose.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <rclcpp_action/rclcpp_action.hpp>
+
+using namespace std::chrono_literals;
 
 class NavigationNode : public rclcpp::Node {
     public:
@@ -24,11 +28,13 @@ class NavigationNode : public rclcpp::Node {
         tf_listener_ = std::make_unique<tf2_ros::TransformListener>(*tf_buffer_);
 
         // Subscription per AprilTag detections
-        subscription_ready_msg_ = this->create_subscription<interfaces_assignment_1::msg::Ready>("/ready", 10, std::bind(&NavigationNode::ready_callback, this, std::placeholders::_1));
+        //subscription_ready_msg_ = this->create_subscription<interfaces_assignment_1::msg::Ready>("/ready", 10, std::bind(&NavigationNode::ready_callback, this, std::placeholders::_1));
         
         subscription_ = this->create_subscription<apriltag_msgs::msg::AprilTagDetectionArray>("/my_apriltag/detections", 10, std::bind(&NavigationNode::start_navigation_callback, this, std::placeholders::_1));
 
         navigation_ = rclcpp_action::create_client<nav2_msgs::action::NavigateToPose>(this, "navigate_to_pose");
+
+        ready_ = this->create_client<interfaces_assignment_1::srv::Ready>("ready");
 
         fill_map = false;
         navigation_active = false;
@@ -43,6 +49,8 @@ class NavigationNode : public rclcpp::Node {
         final_point10.pose.orientation.w = 1;
 
         RCLCPP_INFO(this->get_logger(), "Started node navigation_node!");
+
+        timer_ = this->create_wall_timer(200ms, std::bind(&NavigationNode::send_ready, this));
     }
     
     private:
@@ -51,10 +59,12 @@ class NavigationNode : public rclcpp::Node {
     rclcpp_action::Client<nav2_msgs::action::NavigateToPose>::SharedPtr navigation_;
     std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
     std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
+    rclcpp::TimerBase::SharedPtr timer_;
+    rclcpp::Client<interfaces_assignment_1::srv::Ready>::SharedPtr ready_;
     
     bool fill_map; // first time that compute the transforations
     bool navigation_active; // true if the robot is in navigation
-    bool ready;
+    bool ready; //true if the robot is ready to move
     
     std::map<int, geometry_msgs::msg::PoseStamped> map_apriltags; // the coordinates are respect to the map
     std::map<int, geometry_msgs::msg::PoseStamped> mean_finalpoint; //  mean point between two apriltags
@@ -191,13 +201,55 @@ class NavigationNode : public rclcpp::Node {
         }
     }
 
-    void ready_callback(const interfaces_assignment_1::msg::Ready::SharedPtr message){
+    void send_ready(){
         
-        if(!ready){
-            ready = message->ready.data;
-            RCLCPP_INFO(this->get_logger(), "The current value of ready is: %d!", ready);
+        auto request = std::make_shared<interfaces_assignment_1::srv::Ready::Request>();
+        request->req = ""; //just an empty request, it needs only the response
+
+        while (!(ready_)->wait_for_service(1s)) {
+            if (!rclcpp::ok()) {
+                RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Interrupted while waiting for the service. Exiting.");
+                ready = false;
+                return;
+            }
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "service not available, waiting again...");
         }
 
+        ready_->async_send_request(request, [this](rclcpp::Client<interfaces_assignment_1::srv::Ready>::SharedFuture future)
+        {
+            try
+            {
+                auto response = future.get();
+                if(response->ready.data == true)
+                {
+                    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "navigation robot is ready to move ");
+                    timer_->cancel();
+                    ready = true;
+                }
+                else
+                {
+                    RCLCPP_WARN(this->get_logger(), "waiting to be ready");
+                    ready = false;
+                    retry();
+                }
+
+            }catch (const std::exception& e)
+            {
+                RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Exception: %s", e.what());
+                ready = false;
+                //this->publish_ready_msg(false);
+            }
+        });
+
+        
+
+    }
+    void retry()
+    {
+        timer_->cancel();
+        //retry another request until the response is true
+        timer_ = this->create_wall_timer(200ms, std::bind(&NavigationNode::send_ready, this));
+        RCLCPP_INFO(this->get_logger(), "retry again to send request");
     }
 
     void start_navigation_callback(const apriltag_msgs::msg::AprilTagDetectionArray::SharedPtr message){
