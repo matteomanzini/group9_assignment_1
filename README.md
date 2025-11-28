@@ -51,27 +51,40 @@ cd ~/ros2_ws/src
 
 **2. Clone the repository**:
 
-```git clone https://github.com/matteomanzini/group9_assignment_1```
+```
+git clone https://github.com/matteomanzini/group9_assignment_1
+```
 
 
 ### Running
 
 **1. Return to the root of workspace**:
 
+```
 cd ~/ros2_ws
+```
 
 **2. Remove old builds (optional)**:
 
+```
 rm -rf build/ install/ log/
+```
 
 **3. Compile all packages**:
 
+```
 colcon build
+
+```
 
 **4. Generate ROS2 environment**:
 
+```
 source install/setup.bash
+```
 
 **5. Launch the project**:
 
+```
 ros2 launch my_launch start_launch.xml
+```
