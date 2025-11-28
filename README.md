@@ -17,21 +17,21 @@ There are three important phases:
 The project is implemented by five ROS2 packages:
 
 **1. interfaces_assignment_1**
-: defines Ready.msg to advice if the robot is ready to compute the navigation. If the variable `std_msgs/Bool ready` is true, robot can move; false otherwise.
+: defines Ready.srv to advice if the robot is ready to compute the navigation. If the variable `std_msgs/Bool ready` is true, robot can move; false otherwise.
 
 **2. laser_scan**
 : technique to detect three cylindrical tables. The node `scan_subcribers` publishes their position by clustering the points of laser scan and filtering them based on a range of acceptable distances.
 
 **3. my_apriltag_ros**
-: computes the coordinates and the four corners of two apriltags respect to the external camera. The data are used to compute the final goal pose.
+: computes the coordinates of center and the four corners of two apriltags respect to the external camera. The data are used to compute the final goal pose.
 
 **4. my_launch**
 : contains the main launch file `start_launch.xml`. It launches all single launch files `navigation_launch.xml`, `camera_36h11_launch.xml`, `assignment_1.launch.py` and `laser_launch.xml` with respect to a given order.
 
 **5. navigation_package**
-: contains navigation_node and lyfecycle_client nodes.
+: contains navigation_node and lifecycle_client nodes.
 The first one computes the goal position (in the middle of apriltags) and startups the navigation until final goal is reached.
-The second one defines the initial pose of robot and notifies the navigation_node if robot is ready to move with Ready.msg.
+The second one defines the initial pose of robot and notifies the navigation_node if robot is ready to move with Ready.srv.
 
 
 
@@ -80,6 +80,10 @@ colcon build
 
 ```
 source install/setup.bash
+
+at the end of your .bashrc add:
+
+export ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST
 ```
 
 **5. Launch the project**:
