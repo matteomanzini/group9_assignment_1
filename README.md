@@ -2,9 +2,18 @@
 
 The repository contains the solution of the assignment_1 by group 9.
 The goal is to make the robot move to a position between Apriltags and to detect three cylindrical tables placed somewhere in the room.
+
+# Description of the project
+The project is able to move the robot in the room simulated in 2D by RViz2 and in 3D by Gazebo GUI.
+It starts with the detections of apriltags to select the final point of robot.
+The application startups the simulation of turtlebot choosing the 2D initial position in the room.
+In navigation package, it is calculated the final point where the navigation ended.
+Last step is laser scanner of robot to detect the position of cylindrical tables.
+
 The project is implemented by five ROS2 packages:
-**interfaces_assignment_1**: various confirmation messaged between nodes;
+**interfaces_assignment_1**: confirmation messages between nodes;
 **laser_scan**: detection and identification of the three cylindrical tables;
 **my_apriltag_ros**: apriltag detection and publication of their positions;
 **my_launch**: launch file to execute the entire project;
 **navigation_package**: startup and navigation of the robot until the goal is reached.
+
