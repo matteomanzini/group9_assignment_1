@@ -74,7 +74,6 @@ rm -rf build/ install/ log/
 
 ```
 colcon build
-
 ```
 
 **4. Generate ROS2 environment**:
