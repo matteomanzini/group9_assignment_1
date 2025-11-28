@@ -29,6 +29,6 @@ The project is implemented by five ROS2 packages:
 : contains the main lauch file `start_launch.xml`. It launches all single launch files `navigation_launch.xml`, `camera_36h11_launch.xml`, `assignment_1.launch.py` and `laser_launch.xml` with respect to a given order.
 
 **5. navigation_package**
-: contains lyfecycle_client and navigation_node nodes.
-The first one defines the initial pose of robot and notifies the navigation_node if robot is ready to move with Ready.msg.
-The second one computes the goal position (in the middle of apriltags) and startups the navigation until final goal is reached.
+: contains navigation_node and lyfecycle_client nodes.
+The first one computes the goal position (in the middle of apriltags) and startups the navigation until final goal is reached.
+The second one defines the initial pose of robot and notifies the navigation_node if robot is ready to move with Ready.msg.
