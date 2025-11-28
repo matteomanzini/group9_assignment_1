@@ -29,5 +29,5 @@ The project is implemented by five ROS2 packages:
 
 **5. navigation_package**
 : contains lyfecycle_client and navigation_node nodes.
-The first one defines the initial pose of robot and notify the navigation_node if robot is ready to move with Ready.msg.
+The first one defines the initial pose of robot and notifies the navigation_node if robot is ready to move with Ready.msg.
 The second one computes the goal position (in the middle of apriltags) and startups the navigation until final goal is reached.
