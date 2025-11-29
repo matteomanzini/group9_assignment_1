@@ -1,6 +1,7 @@
 # Assignment 1 - The turtlebot
 
 The repository contains the solution of the assignment_1 by group 9.
+
 The project implements the navigation and object detection for a robot in the simulated environment, using *RViz2* for 2D visualization and *Gazebo GUI* for 3D simulation.
 
 ### Overview
@@ -19,7 +20,7 @@ The system allows the robot to:
 
 The project is implemented by five ROS2 packages:
 
-**1. interfaces_assignment_1**
+### **1. interfaces_assignment_1**
 
 Defines the custom service interfaces:
 
@@ -27,16 +28,16 @@ Defines the custom service interfaces:
 
 *2. Goalresult.srv*: checks the goal status with `std_msgs/Bool goal_status` and the goal position using `geometry_msgs/PoseStamped goal_pose`.
 
-**2. laser_scan**
+### **2. laser_scan**
 : technique to detect three cylindrical tables is by clustering the points of laser scan and filtering them based on a range of acceptable distances.
 
 The node `scan_subcribers` publishes detected table positions.
 
-**3. my_apriltag_ros**
+### **3. my_apriltag_ros**
 : computes the coordinates of center and the four corners of two AprilTags relative to the external camera. Provides data to the navigation_node in **navigation_package** tocompute the final goal position.
 
 
-**4. my_launch**
+### **4. my_launch**
 : contains the main launch file `start_launch.xml` for system startup. It launches all single launch files:
 
 *1. `navigation_launch.xml`*;
@@ -47,7 +48,7 @@ The node `scan_subcribers` publishes detected table positions.
 
 *4. `laser_launch.xml`*.
 
-**5. navigation_package**
+### **5. navigation_package**
 : implements the logic of navigation inside the simulated environment.
 
 It contains two nodes: 
