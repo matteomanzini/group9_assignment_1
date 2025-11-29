@@ -51,7 +51,7 @@ Contains the main launch file `start_launch.xml` for system startup. It launches
 *4. `laser_launch.xml`* : processes the laser for table detection.
 
 ### **• navigation_package**
-: implements the logic of navigation inside the simulated environment.
+Implements the logic of navigation inside the simulated environment.
 
 It contains two nodes: 
 
