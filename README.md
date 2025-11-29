@@ -1,12 +1,11 @@
 # Assignment 1 - The turtlebot
 
-The repository contains the solution of the assignment_1 by group 9.
-
-The project implements the navigation and object detection of the turtlebot in the simulated environment, using *RViz2* for 2D visualization and *Gazebo GUI* for 3D simulation.
+The project contains the solution of the first assignment for the Intelligent Robotics course.
+The objective is to implement an autonomous navigation pipeline got a turtlebot in the simulated environment, using *RViz2* for 2D visualization and *Gazebo GUI* for 3D simulation.
 
 ### Overview
 
-The system allows the robot to:
+The system enables the turtlebot to:
 
 **• Detect the AprilTags** in the enviroment using the external camera;
 
