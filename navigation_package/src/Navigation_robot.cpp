@@ -123,6 +123,7 @@ class NavigationNode : public rclcpp::Node {
 
         geometry_msgs::msg::PoseStamped goal;
 
+        // initilize the goal position
         goal.pose.position.x = 0;
         goal.pose.position.y = 0;
         goal.pose.position.z = 0;
@@ -135,9 +136,10 @@ class NavigationNode : public rclcpp::Node {
             goal.pose.position.y += point.pose.position.y;
             goal.pose.position.z += point.pose.position.z;
 
-            RCLCPP_INFO(this->get_logger(), "Tag ID %d in MAP: x = %.2f, y = %.2f, z = %.2f", pair.first, point.pose.position.x, point.pose.position.y, point.pose.position.z);
+            RCLCPP_INFO(this->get_logger(), "Tag ID %d in MAP frame: x = %.2f, y = %.2f, z = %.2f", pair.first, point.pose.position.x, point.pose.position.y, point.pose.position.z);
         }
 
+        // compute the mean goal position 
         goal.header.frame_id = "map";
         goal.header.stamp = this->now();
         goal.pose.position.x = goal.pose.position.x/2;
@@ -145,18 +147,20 @@ class NavigationNode : public rclcpp::Node {
         goal.pose.position.z = 0; 
         goal.pose.orientation.w = 1;
 
-        RCLCPP_INFO(this->get_logger(), "Middle point in MAP: x = %.2f, y = %.2f, z = %.2f", goal.pose.position.x, goal.pose.position.y, goal.pose.position.z);
+        RCLCPP_INFO(this->get_logger(), "Middle point in MAP frame: x = %.2f, y = %.2f, z = %.2f", goal.pose.position.x, goal.pose.position.y, goal.pose.position.z);
 
         return goal;
     }
 
     // CHECK IF THE POSE IS EMPTY
     bool poseEmpty(const geometry_msgs::msg::PoseStamped& current_pose){
+        
         if(current_pose.pose.position.x == 0 && current_pose.pose.position.y == 0 && current_pose.pose.position.z == 0 && current_pose.pose.orientation.x == 0 && current_pose.pose.orientation.y == 0 && current_pose.pose.orientation.z == 0) return true;
 
         return false;
     }
 
+    // RECOMPUTE THE GOAL IF NECESSARY
     bool recomputeGoal(){
         
         if(!navigation_active) return false;
@@ -173,7 +177,7 @@ class NavigationNode : public rclcpp::Node {
         // if the distance to goal is less than 0.05 meter, recompute the goal point
         if(dist_between_goals > 0.05){
 
-            RCLCPP_INFO(this->get_logger(), "The goal is changed! New goal is: x = %.2f, y = %.2f", final_point.pose.position.x, final_point.pose.position.y);
+            RCLCPP_INFO(this->get_logger(), "The goal is changed! New goal in MAP frame is: x = %.2f, y = %.2f", final_point.pose.position.x, final_point.pose.position.y);
 
             return true;
         }
@@ -244,6 +248,7 @@ class NavigationNode : public rclcpp::Node {
         });
     }
 
+    // CALLBACK TO SET THE FINAL POSITION AND THE GOAL REACHED
     void goalCallback(const std::shared_ptr<interfaces_assignment_1::srv::Goalresult::Request> request, std::shared_ptr<interfaces_assignment_1::srv::Goalresult::Response> response)
     {
         if(request->req.data){
@@ -253,6 +258,7 @@ class NavigationNode : public rclcpp::Node {
             
             if(goal_found == true)
             {
+                // if robot arrives in goal position
                 response->goal_pose = goal_point;
                 
                 RCLCPP_INFO(this->get_logger(), "Send the goal with pose x = %.2f y = %.2f", response->goal_pose.pose.position.x, response->goal_pose.pose.position.y);
@@ -270,6 +276,7 @@ class NavigationNode : public rclcpp::Node {
         RCLCPP_INFO(this->get_logger(), "retry again to send request");
     }
 
+    // INITIAL PHASE OF NAVIGATION
     void startNavigationCallback(const apriltag_msgs::msg::AprilTagDetectionArray::SharedPtr message){
         
         if(!ready){
@@ -312,6 +319,7 @@ class NavigationNode : public rclcpp::Node {
         }
     }
 
+    // SET GOAL AND NAVIGATE
     void robotNavigation(geometry_msgs::msg::PoseStamped goal){
         
         if (!navigation_->wait_for_action_server(std::chrono::seconds(5))) {
@@ -336,13 +344,14 @@ class NavigationNode : public rclcpp::Node {
                 RCLCPP_INFO(this->get_logger(), "The goal is reached! The goal point is: x = %.2f, y = %.2f!", goal_point.pose.position.x, goal_point.pose.position.y);
                 RCLCPP_INFO(this->get_logger(), "Time of navigation: %.2f seconds", (end_nav - start_nav).seconds());
 
+                // checsk if it is necessary recompute the goal and start a new navigation
                 if(recomputeGoal()){
                     RCLCPP_WARN(this->get_logger(), "The goal is changed!");
                     goal_point = final_point;
                     robotNavigation(goal_point);
                 }
                 else{
-                    RCLCPP_INFO(this->get_logger(), "Final goal is confermed!");
+                    RCLCPP_INFO(this->get_logger(), "Final goal is reached. Navigation stops and laser detector phase can begin!");
                     goal_found = true;
                 }
 
