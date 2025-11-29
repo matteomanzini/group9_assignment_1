@@ -33,8 +33,8 @@ class Lifecycle_node : public rclcpp::Node
         localization_ptr = this->create_client<nav2_msgs::srv::ManageLifecycleNodes>("/lifecycle_manager_localization/manage_nodes");
         navigation_ptr = this->create_client<nav2_msgs::srv::ManageLifecycleNodes>("/lifecycle_manager_navigation/manage_nodes");
         initial_pose_pub = this->create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>("/initialpose", 10);
-        odom_sub = this->create_subscription<nav_msgs::msg::Odometry>("/odom",10, std::bind(&Lifecycle_node::odom_callback, this, std::placeholders::_1));
-        ready_service = this->create_service<interfaces_assignment_1::srv::Ready>("ready", std::bind(&Lifecycle_node::ready_callback, this, std::placeholders::_1, std::placeholders::_2));
+        odom_sub = this->create_subscription<nav_msgs::msg::Odometry>("/odom",10, std::bind(&Lifecycle_node::odomCallback, this, std::placeholders::_1));
+        ready_service = this->create_service<interfaces_assignment_1::srv::Ready>("ready", std::bind(&Lifecycle_node::readyCallback, this, std::placeholders::_1, std::placeholders::_2));
         
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Lifecycle node initialized");
         
@@ -45,7 +45,7 @@ class Lifecycle_node : public rclcpp::Node
     
     private:
 
-    void odom_callback(const nav_msgs::msg::Odometry::SharedPtr msg)
+    void odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg)
     {
         if(!initialpose_sent)
         {
@@ -62,12 +62,12 @@ class Lifecycle_node : public rclcpp::Node
 
             initialpose_sent = true;
             
-            this->start_localization(initialPose);
+            this->startLocalization(initialPose);
         }
         return;
     }
 
-    void start_localization(const geometry_msgs::msg::PoseWithCovarianceStamped &initialPose)
+    void startLocalization(const geometry_msgs::msg::PoseWithCovarianceStamped &initialPose)
     {
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Start localization");
 
@@ -95,7 +95,7 @@ class Lifecycle_node : public rclcpp::Node
                 {
                     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "localization activated successfully");
                     initial_pose_pub->publish(initialPose);
-                    this->start_navigation();
+                    this->startNavigation();
                 }else 
                 {
                     RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Failed to call service Localization");
@@ -116,7 +116,7 @@ class Lifecycle_node : public rclcpp::Node
 
     
 
-    void start_navigation()
+    void startNavigation()
     {
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Start navigation");
 
@@ -179,7 +179,7 @@ class Lifecycle_node : public rclcpp::Node
     }
     */
 
-    void ready_callback(const std::shared_ptr<interfaces_assignment_1::srv::Ready::Request> request, 
+    void readyCallback(const std::shared_ptr<interfaces_assignment_1::srv::Ready::Request> request, 
                             std::shared_ptr<interfaces_assignment_1::srv::Ready::Response> response)
     {
         if(request->req == "") 

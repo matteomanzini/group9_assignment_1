@@ -1,4 +1,4 @@
-string req
+std_msgs/Bool req
 ---
 std_msgs/Bool goal_status
 geometry_msgs/PoseStamped goal_pose
