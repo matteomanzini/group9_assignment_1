@@ -159,7 +159,7 @@ class ScanSubscriber : public rclcpp::Node
       try
       {
         auto response = future.get();
-        if (response->goal.data) 
+        if (response->goal_status.data) 
         {
           RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Laser scan activated successfully");
           scan_flag = true;
