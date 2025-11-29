@@ -120,3 +120,14 @@ export ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST
 ```
 ros2 launch my_launch start_launch.xml
 ```
+
+**(OPTIONALY)** launch the project without the node that detects apriltags (to have a more clear printing):
+
+```
+ros2 launch my_launch start_launch_without_apriltag.xml
+```
+in another new terminal:
+
+```
+ros2 launch my_apriltag_ros camera_36h11_launch.xml
+```
