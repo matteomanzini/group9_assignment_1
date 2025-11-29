@@ -26,7 +26,7 @@ Defines the custom service interfaces:
 
 *• Ready.srv* : controls if the robot is ready to compute the navigation. The response `std_msgs/Bool ready` is `true` if robot can move, `false` otherwise.
 
-*• Goalresult.srv* : checks the goal status and position respectively with the `std_msgs/Bool goal_status` and `geometry_msgs/PoseStamped goal_pose` responses.
+*• Goalresult.srv* : checks the final goal status and final position of the robot respectively with the `std_msgs/Bool goal_status` and `geometry_msgs/PoseStamped goal_pose` responses.
 
 ### **• laser_scan**
 : technique to detect three cylindrical tables by clustering the points of laser scan and filtering them based on a range of acceptable distances.
