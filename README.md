@@ -63,10 +63,6 @@ Performs coordinate transformation in map frame to act the navigation in RViz2.
 
 
 
-# Techica
-
-
-
 # Installation and Running
 
 Open the terminal and follow the instructions below.
