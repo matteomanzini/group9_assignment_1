@@ -1,14 +1,18 @@
 # Assignment 1 - The turtlebot
 
 The repository contains the solution of the assignment_1 by group 9.
-The goal is to control the Turtlebot in the room simulated in 2D by RViz2 and in 3D by Gazebo GUI.
-There are three important phases:
 
-1- Detect the AprilTags in the enviroment;
+The project implements the navigation and object detection of the turtlebot in the simulated environment, using *RViz2* for 2D visualization and *Gazebo GUI* for 3D simulation.
 
-2- Navigate in the room to reach the final point;
+### Overview
 
-3- Localize three cylindrical tables.
+The system allows the robot to:
+
+**• Detect the AprilTags** in the enviroment using the external camera;
+
+**• Navigate in the room** to reach the computed final position;
+
+**• Localize three cylindrical** tables using laser scan data.
 
 
 
@@ -16,22 +20,46 @@ There are three important phases:
 
 The project is implemented by five ROS2 packages:
 
-**1. interfaces_assignment_1**
-: defines Ready.srv to advice if the robot is ready to compute the navigation. If the variable `std_msgs/Bool ready` is true, robot can move; false otherwise.
+### **• interfaces_assignment_1**
 
-**2. laser_scan**
-: technique to detect three cylindrical tables. The node `scan_subcribers` publishes their position by clustering the points of laser scan and filtering them based on a range of acceptable distances.
+Defines the custom service interfaces:
 
-**3. my_apriltag_ros**
-: computes the coordinates of center and the four corners of two apriltags respect to the external camera. The data are used to compute the final goal pose.
+*• `Ready.srv`* : controls if the robot is ready to compute the navigation. The response `std_msgs/Bool ready` is `true` if robot can move, `false` otherwise.
 
-**4. my_launch**
-: contains the main launch file `start_launch.xml`. It launches all single launch files `navigation_launch.xml`, `camera_36h11_launch.xml`, `assignment_1.launch.py` and `laser_launch.xml` with respect to a given order.
+*• `Goalresult.srv`* : checks the final goal status and final position of the robot respectively with the `std_msgs/Bool goal_status` and `geometry_msgs/PoseStamped goal_pose` responses.
 
-**5. navigation_package**
-: contains navigation_node and lifecycle_client nodes.
-The first one computes the goal position (in the middle of apriltags) and startups the navigation until final goal is reached.
-The second one defines the initial pose of robot and notifies the navigation_node if robot is ready to move with Ready.srv.
+### **• laser_scan**
+Technique to detect three cylindrical tables by clustering the points of laser scan and filtering them based on a range of acceptable distances.
+
+The node `scan_subcribers` publishes detected table positions.
+
+### **• my_apriltag_ros**
+Computes the coordinates of center and the four corners of two AprilTags relative to the external camera. 
+
+Provides data to the `navigation_node` in **navigation_package** to compute the final goal position.
+
+
+### **• my_launch**
+Contains the main launch file `start_launch.xml` for system startup. It launches all single launch files:
+
+*1. `navigation_launch.xml`* : startups 2D pose estimate and Nav2 goal;
+
+*2. `camera_36h11_launch.xml`* : initializes external camera and AprilTag detection;
+
+*3. `assignment_1.launch.py`* : launches navigation and lifecycle client nodes;
+
+*4. `laser_launch.xml`* : processes the laser for table detection.
+
+### **• navigation_package**
+: implements the logic of navigation inside the simulated environment.
+
+It contains two nodes: 
+
+*- lifecycle_client* sets the initial pose of robot and notifies the navigation_node if robot is ready to move with Ready.srv.
+
+*- navigation_node* computes the goal position (in the middle of apriltags) and startups the navigation until final goal is reached.
+
+Performs coordinate transformation in map frame to act the navigation in RViz2.
 
 
 

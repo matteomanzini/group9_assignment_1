@@ -247,9 +247,9 @@ class NavigationNode : public rclcpp::Node {
     void goalCallback(const std::shared_ptr<interfaces_assignment_1::srv::Goalresult::Request> request, std::shared_ptr<interfaces_assignment_1::srv::Goalresult::Response> response)
     {
         if(request->req.data){
-            response->goal.data = goal_found;
+            response->goal_status.data = goal_found;
 
-            RCLCPP_INFO(this->get_logger(), "goalresult service called: goal = %s", response->goal.data ? "true" : "false");
+            RCLCPP_INFO(this->get_logger(), "goalresult service called: goal_status = %s", response->goal_status.data ? "true" : "false");
             
             if(goal_found == true)
             {
