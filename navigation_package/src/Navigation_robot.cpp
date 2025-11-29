@@ -1,7 +1,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
-#include "interfaces_assignment_1/msg/ready.hpp"
 #include "interfaces_assignment_1/srv/ready.hpp"
+#include "interfaces_assignment_1/srv/goalresult.hpp"
 
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include <tf2_ros/transform_listener.h>
@@ -28,17 +28,19 @@ class NavigationNode : public rclcpp::Node {
         tf_listener_ = std::make_unique<tf2_ros::TransformListener>(*tf_buffer_);
 
         // Subscription per AprilTag detections
-        //subscription_ready_msg_ = this->create_subscription<interfaces_assignment_1::msg::Ready>("/ready", 10, std::bind(&NavigationNode::ready_callback, this, std::placeholders::_1));
-        
         subscription_ = this->create_subscription<apriltag_msgs::msg::AprilTagDetectionArray>("/my_apriltag/detections", 10, std::bind(&NavigationNode::start_navigation_callback, this, std::placeholders::_1));
 
         navigation_ = rclcpp_action::create_client<nav2_msgs::action::NavigateToPose>(this, "navigate_to_pose");
+
+        goal_service_ = this->create_service<interfaces_assignment_1::srv::Goalresult>("goalresult", std::bind(&NavigationNode::goal_callback, this, std::placeholders::_1, std::placeholders::_2));
 
         ready_ = this->create_client<interfaces_assignment_1::srv::Ready>("ready");
 
         fill_map = false;
         navigation_active = false;
         ready = false;
+        goal_found = false;
+
         index1 = 0;
         index10 = 0;
         final_point1.header.frame_id = "map";
@@ -55,16 +57,17 @@ class NavigationNode : public rclcpp::Node {
     
     private:
     rclcpp::Subscription<apriltag_msgs::msg::AprilTagDetectionArray>::SharedPtr subscription_;
-    rclcpp::Subscription<interfaces_assignment_1::msg::Ready>::SharedPtr subscription_ready_msg_;
     rclcpp_action::Client<nav2_msgs::action::NavigateToPose>::SharedPtr navigation_;
     std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
     std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
     rclcpp::TimerBase::SharedPtr timer_;
     rclcpp::Client<interfaces_assignment_1::srv::Ready>::SharedPtr ready_;
+    rclcpp::Service<interfaces_assignment_1::srv::Goalresult>::SharedPtr goal_service_;
     
     bool fill_map; // first time that compute the transforations
     bool navigation_active; // true if the robot is in navigation
-    bool ready; //true if the robot is ready to move
+    bool ready; // true if the robot is ready to move
+    bool goal_found; // true if the goal is found
     
     std::map<int, geometry_msgs::msg::PoseStamped> map_apriltags; // the coordinates are respect to the map
     std::map<int, geometry_msgs::msg::PoseStamped> mean_finalpoint; //  mean point between two apriltags
@@ -237,13 +240,28 @@ class NavigationNode : public rclcpp::Node {
             {
                 RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Exception: %s", e.what());
                 ready = false;
-                //this->publish_ready_msg(false);
             }
         });
-
-        
-
     }
+
+    void goal_callback(const std::shared_ptr<interfaces_assignment_1::srv::Goalresult::Request> request, std::shared_ptr<interfaces_assignment_1::srv::Goalresult::Response> response)
+    {
+        if(request->req == ""){
+            response->goal.data = goal_found;
+
+            RCLCPP_INFO(this->get_logger(), "goalresult service called: goal = %s", response->goal.data ? "true" : "false");
+            
+            if(goal_found == true)
+            {
+                response->goal_pose = goal_point;
+                
+                RCLCPP_INFO(this->get_logger(), "Send the goal with pose x = %.2f y = %.2f", response->goal_pose.pose.position.x, response->goal_pose.pose.position.y);
+            }
+        }
+
+        return;
+    }
+
     void retry()
     {
         timer_->cancel();
@@ -325,6 +343,7 @@ class NavigationNode : public rclcpp::Node {
                 }
                 else{
                     RCLCPP_INFO(this->get_logger(), "Final goal is confermed!");
+                    goal_found = true;
                 }
 
                 return;
