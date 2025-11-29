@@ -1,7 +1,7 @@
 # Assignment 1 - The turtlebot
 
 The project contains the solution of the first assignment for the Intelligent Robotics course.
-The objective is to implement an autonomous navigation pipeline got a turtlebot in the simulated environment, using *RViz2* for 2D visualization and *Gazebo GUI* for 3D simulation.
+The objective is to implement an autonomous navigation pipeline for the turtlebot in the simulated environment, using *RViz2* for 2D visualization and *Gazebo GUI* for 3D simulation.
 
 ### Overview
 
