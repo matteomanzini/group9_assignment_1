@@ -175,7 +175,7 @@ class NavigationNode : public rclcpp::Node {
         float dist_between_goals = getDistance(final_point, goal_point);
 
         // if the distance to goal is less than 0.05 meter, recompute the goal point
-        if(dist_between_goals > 0.05){
+        if(dist_between_goals > 0.2){
 
             RCLCPP_INFO(this->get_logger(), "The goal is changed! New goal in MAP frame is: x = %.2f, y = %.2f", final_point.pose.position.x, final_point.pose.position.y);
 
