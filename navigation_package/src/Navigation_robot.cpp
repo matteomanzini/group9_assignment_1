@@ -215,11 +215,11 @@ class NavigationNode : public rclcpp::Node {
 
         while (!(ready_)->wait_for_service(1s)) {
             if (!rclcpp::ok()) {
-                RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Interrupted while waiting for the service. Exiting.");
+                RCLCPP_ERROR(this->get_logger(), "Interrupted while waiting for the service. Exiting.");
                 ready = false;
                 return;
             }
-            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "service not available, waiting again...");
+            RCLCPP_INFO(this->get_logger(), "service not available, waiting again...");
         }
 
         ready_->async_send_request(request, [this](rclcpp::Client<interfaces_assignment_1::srv::Ready>::SharedFuture future)
@@ -229,20 +229,18 @@ class NavigationNode : public rclcpp::Node {
                 auto response = future.get();
                 if(response->ready.data == true)
                 {
-                    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "navigation robot is ready to move ");
+                    RCLCPP_INFO(this->get_logger(), "navigation robot is ready to move ");
                     timer_->cancel();
                     ready = true;
                 }
                 else
                 {
-                    RCLCPP_WARN(this->get_logger(), "waiting to be ready");
                     ready = false;
-                    retry();
                 }
 
             }catch (const std::exception& e)
             {
-                RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Exception: %s", e.what());
+                RCLCPP_ERROR(this->get_logger(), "Exception: %s", e.what());
                 ready = false;
             }
         });
@@ -268,19 +266,11 @@ class NavigationNode : public rclcpp::Node {
         return;
     }
 
-    void retry()
-    {
-        timer_->cancel();
-        //retry another request until the response is true
-        timer_ = this->create_wall_timer(200ms, std::bind(&NavigationNode::sendReady, this));
-        RCLCPP_INFO(this->get_logger(), "retry again to send request");
-    }
-
     // INITIAL PHASE OF NAVIGATION
     void startNavigationCallback(const apriltag_msgs::msg::AprilTagDetectionArray::SharedPtr message){
         
         if(!ready){
-            RCLCPP_WARN(this->get_logger(), "Robot is not ready for navigation!");
+            RCLCPP_WARN(this->get_logger(), "Waiting robot to be ready for navigation");
             return;
         }
 

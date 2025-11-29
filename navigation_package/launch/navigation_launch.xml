@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
-  <node pkg="navigation_package" exec="lifecycle" name="lifecycle"/>
-  <node pkg="navigation_package" exec="navigationrobot" name="navigation"/>
+  <node pkg="navigation_package" exec="lifecycle" name="lifecycle" output="screen"/>
+  <node pkg="navigation_package" exec="navigationrobot" name="navigation" output="screen"/>
 </launch>

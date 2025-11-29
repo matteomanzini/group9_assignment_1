@@ -1,0 +1,7 @@
+<launch>
+    <include file="$(find-pkg-share navigation_package)/launch/navigation_launch.xml"/>
+    <timer period="1.0">
+        <include file="$(find-pkg-share ir_launch)/launch/assignment_1.launch.py"/>
+    </timer>
+    <include file="$(find-pkg-share laser_scan)/launch/laser_launch.xml"/>
+</launch>
