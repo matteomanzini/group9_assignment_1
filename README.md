@@ -82,7 +82,7 @@ cd ~/ros2_ws/src
 git clone https://github.com/matteomanzini/group9_assignment_1
 ```
 
-for the simulation:
+**3. Clone the repository ir_2526 for the simulation**:
 
 ```
 git clone https://github.com/PieroSimonet/ir_2526.git
