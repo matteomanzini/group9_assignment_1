@@ -15,7 +15,6 @@ find_package(geometry_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
-  #"msg/Ready.msg"
   "srv/Ready.srv"
   "srv/Goalresult.srv"
   DEPENDENCIES std_msgs geometry_msgs
