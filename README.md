@@ -8,11 +8,11 @@ The project implements the navigation and object detection for a robot in the si
 
 The system allows the robot to:
 
-1- **Detect the AprilTags** in the enviroment using the external camera;
+**• Detect the AprilTags** in the enviroment using the external camera;
 
-2- **Navigate in the room** to reach the computed final position;
+**• Navigate in the room** to reach the computed final position;
 
-3- **Localize three cylindrical** tables using laser scan data.
+**• Localize three cylindrical** tables using laser scan data.
 
 
 
