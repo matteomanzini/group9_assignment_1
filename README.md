@@ -29,18 +29,18 @@ Defines the custom service interfaces:
 *• Goalresult.srv* : checks the final goal status and final position of the robot respectively with the `std_msgs/Bool goal_status` and `geometry_msgs/PoseStamped goal_pose` responses.
 
 ### **• laser_scan**
-: technique to detect three cylindrical tables by clustering the points of laser scan and filtering them based on a range of acceptable distances.
+Technique to detect three cylindrical tables by clustering the points of laser scan and filtering them based on a range of acceptable distances.
 
 The node `scan_subcribers` publishes detected table positions.
 
 ### **• my_apriltag_ros**
-: computes the coordinates of center and the four corners of two AprilTags relative to the external camera. 
+Computes the coordinates of center and the four corners of two AprilTags relative to the external camera. 
 
 Provides data to the `navigation_node` in **navigation_package** to compute the final goal position.
 
 
 ### **• my_launch**
-: contains the main launch file `start_launch.xml` for system startup. It launches all single launch files:
+Contains the main launch file `start_launch.xml` for system startup. It launches all single launch files:
 
 *1. `navigation_launch.xml`* : startups 2D pose estimate and Nav2 goal;
 
