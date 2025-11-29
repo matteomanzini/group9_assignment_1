@@ -2,7 +2,7 @@
 
 The repository contains the solution of the assignment_1 by group 9.
 
-The project implements the navigation and object detection for a robot in the simulated environment, using *RViz2* for 2D visualization and *Gazebo GUI* for 3D simulation.
+The project implements the navigation and object detection of the turtlebot in the simulated environment, using *RViz2* for 2D visualization and *Gazebo GUI* for 3D simulation.
 
 ### Overview
 
