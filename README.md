@@ -127,7 +127,7 @@ export ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST
 ros2 launch my_launch start_launch.xml
 ```
 
-**6. (OPTIONALY)** launch the project without the node that detects apriltags (to have a more clear printing):
+**6. (OPTIONAL)** launch the project without the node that detects apriltags (to have a more clear printing):
 
 ```
 ros2 launch my_launch start_launch_without_apriltag.xml
