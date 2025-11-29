@@ -135,11 +135,10 @@ class ScanSubscriber : public rclcpp::Node
     if (scan_flag) 
     {
       timer_->cancel();
+      RCLCPP_INFO(get_logger(), "Start laser scan");
       return;
     }
-
-    RCLCPP_INFO(get_logger(), "Start laser scan");
-
+    
     auto request = std::make_shared<interfaces_assignment_1::srv::Goalresult::Request>();
     request->req.data = true;
 
