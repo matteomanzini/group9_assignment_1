@@ -28,11 +28,11 @@ class NavigationNode : public rclcpp::Node {
         tf_listener_ = std::make_unique<tf2_ros::TransformListener>(*tf_buffer_);
 
         // Subscription per AprilTag detections
-        subscription_ = this->create_subscription<apriltag_msgs::msg::AprilTagDetectionArray>("/my_apriltag/detections", 10, std::bind(&NavigationNode::start_navigation_callback, this, std::placeholders::_1));
+        subscription_ = this->create_subscription<apriltag_msgs::msg::AprilTagDetectionArray>("/my_apriltag/detections", 10, std::bind(&NavigationNode::startNavigationCallback, this, std::placeholders::_1));
 
         navigation_ = rclcpp_action::create_client<nav2_msgs::action::NavigateToPose>(this, "navigate_to_pose");
 
-        goal_service_ = this->create_service<interfaces_assignment_1::srv::Goalresult>("goalresult", std::bind(&NavigationNode::goal_callback, this, std::placeholders::_1, std::placeholders::_2));
+        goal_service_ = this->create_service<interfaces_assignment_1::srv::Goalresult>("goalresult", std::bind(&NavigationNode::goalCallback, this, std::placeholders::_1, std::placeholders::_2));
 
         ready_ = this->create_client<interfaces_assignment_1::srv::Ready>("ready");
 
@@ -52,7 +52,7 @@ class NavigationNode : public rclcpp::Node {
 
         RCLCPP_INFO(this->get_logger(), "Started node navigation_node!");
 
-        timer_ = this->create_wall_timer(200ms, std::bind(&NavigationNode::send_ready, this));
+        timer_ = this->create_wall_timer(200ms, std::bind(&NavigationNode::sendReady, this));
     }
     
     private:
@@ -102,7 +102,7 @@ class NavigationNode : public rclcpp::Node {
     }
 
     // TRASFORMATION FUNCTION to map points
-    geometry_msgs::msg::PoseStamped trasformation_to_map(const geometry_msgs::msg::PoseStamped& started_point){
+    geometry_msgs::msg::PoseStamped transformToMap(const geometry_msgs::msg::PoseStamped& started_point){
 
         geometry_msgs::msg::PoseStamped output;
 
@@ -119,7 +119,7 @@ class NavigationNode : public rclcpp::Node {
     }
 
     // COMPUTE THE GOAL MIDDLE POINT
-    geometry_msgs::msg::PoseStamped compute_goal_point(){
+    geometry_msgs::msg::PoseStamped computeGoalPoint(){
 
         geometry_msgs::msg::PoseStamped goal;
 
@@ -157,7 +157,7 @@ class NavigationNode : public rclcpp::Node {
         return false;
     }
 
-    bool recompute_goal(){
+    bool recomputeGoal(){
         
         if(!navigation_active) return false;
 
@@ -181,7 +181,7 @@ class NavigationNode : public rclcpp::Node {
         return false;
     }
 
-    bool get_apriltag_pose(int tag_id, geometry_msgs::msg::PoseStamped& pose) {
+    bool getApriltagPose(int tag_id, geometry_msgs::msg::PoseStamped& pose) {
 
         std::string tag_frame = "tag36h11:" + std::to_string(tag_id);
         std::string reference_frame = "external_camera/link/rgb_camera";
@@ -204,7 +204,7 @@ class NavigationNode : public rclcpp::Node {
         }
     }
 
-    void send_ready(){
+    void sendReady(){
         
         auto request = std::make_shared<interfaces_assignment_1::srv::Ready::Request>();
         request->req = ""; //just an empty request, it needs only the response
@@ -244,9 +244,9 @@ class NavigationNode : public rclcpp::Node {
         });
     }
 
-    void goal_callback(const std::shared_ptr<interfaces_assignment_1::srv::Goalresult::Request> request, std::shared_ptr<interfaces_assignment_1::srv::Goalresult::Response> response)
+    void goalCallback(const std::shared_ptr<interfaces_assignment_1::srv::Goalresult::Request> request, std::shared_ptr<interfaces_assignment_1::srv::Goalresult::Response> response)
     {
-        if(request->req == ""){
+        if(request->req.data){
             response->goal.data = goal_found;
 
             RCLCPP_INFO(this->get_logger(), "goalresult service called: goal = %s", response->goal.data ? "true" : "false");
@@ -266,11 +266,11 @@ class NavigationNode : public rclcpp::Node {
     {
         timer_->cancel();
         //retry another request until the response is true
-        timer_ = this->create_wall_timer(200ms, std::bind(&NavigationNode::send_ready, this));
+        timer_ = this->create_wall_timer(200ms, std::bind(&NavigationNode::sendReady, this));
         RCLCPP_INFO(this->get_logger(), "retry again to send request");
     }
 
-    void start_navigation_callback(const apriltag_msgs::msg::AprilTagDetectionArray::SharedPtr message){
+    void startNavigationCallback(const apriltag_msgs::msg::AprilTagDetectionArray::SharedPtr message){
         
         if(!ready){
             RCLCPP_WARN(this->get_logger(), "Robot is not ready for navigation!");
@@ -281,7 +281,7 @@ class NavigationNode : public rclcpp::Node {
             int id = det.id;
 
             geometry_msgs::msg::PoseStamped point;
-            bool conv_to_pose = get_apriltag_pose(id, point);
+            bool conv_to_pose = getApriltagPose(id, point);
             
             if (conv_to_pose == false) {
                 RCLCPP_WARN(this->get_logger(), "Wrong conversion!");
@@ -289,7 +289,7 @@ class NavigationNode : public rclcpp::Node {
             }
 
             // insert or upload of map point
-            map_apriltags[id] = trasformation_to_map(point);
+            map_apriltags[id] = transformToMap(point);
 
             if(id == 1){
                 final_point1.pose.position.x += map_apriltags[id].pose.position.x;
@@ -306,13 +306,13 @@ class NavigationNode : public rclcpp::Node {
             if(map_apriltags.size() == 2 && !fill_map){
                 fill_map = true;
                 RCLCPP_INFO(this->get_logger(), "Set the goal for the first time!");
-                goal_point = compute_goal_point();
-                robot_navigation(goal_point);
+                goal_point = computeGoalPoint();
+                robotNavigation(goal_point);
             }
         }
     }
 
-    void robot_navigation(geometry_msgs::msg::PoseStamped goal){
+    void robotNavigation(geometry_msgs::msg::PoseStamped goal){
         
         if (!navigation_->wait_for_action_server(std::chrono::seconds(5))) {
             RCLCPP_ERROR(this->get_logger(), "Not available 'navigate_to_pose' server");
@@ -336,10 +336,10 @@ class NavigationNode : public rclcpp::Node {
                 RCLCPP_INFO(this->get_logger(), "The goal is reached! The goal point is: x = %.2f, y = %.2f!", goal_point.pose.position.x, goal_point.pose.position.y);
                 RCLCPP_INFO(this->get_logger(), "Time of navigation: %.2f seconds", (end_nav - start_nav).seconds());
 
-                if(recompute_goal()){
+                if(recomputeGoal()){
                     RCLCPP_WARN(this->get_logger(), "The goal is changed!");
                     goal_point = final_point;
-                    robot_navigation(goal_point);
+                    robotNavigation(goal_point);
                 }
                 else{
                     RCLCPP_INFO(this->get_logger(), "Final goal is confermed!");
