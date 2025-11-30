@@ -95,6 +95,7 @@ This package must be added inside `ros2_ws/src`.
 
 The final structure of workspace must be:
 
+<pre>
 ros2_ws
 
 ├── src
