@@ -88,6 +88,28 @@ git clone https://github.com/matteomanzini/group9_assignment_1
 ```
 git clone https://github.com/PieroSimonet/ir_2526.git
 ```
+This package must be added inside `ros2_ws/src`.
+
+
+### Final structure
+
+The final structure of workspace must be:
+
+ros2_ws
+├── src
+│    ├── group_assignment_1
+│    │   ├── interfaces_assignment_1
+│    │   ├── laser_scan
+│    │   ├── my_apriltag_ros
+│    │   ├── my_launch
+│    │   └── navigation_package
+│    └── ir_2526
+│        ├── apriltag_ros
+│        ├── ir_base
+│        ├── ir_description
+│        ├── ir_launch
+│        └── ir_movit_config
+└──
 
 
 ### Running
@@ -133,6 +155,7 @@ ros2 launch my_launch start_launch.xml
 ```
 ros2 launch my_launch start_launch_without_apriltag.xml
 ```
+
 **in another new terminal**:
 
 ```
