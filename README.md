@@ -23,9 +23,9 @@ The project is implemented by five ROS2 packages:
 
 Defines the custom service interfaces:
 
-*• `Ready.srv`* : controls if the robot is ready to compute the navigation. The response `std_msgs/Bool ready` is `true` if robot can move, `false` otherwise.
+*• `srv/Ready.srv`* : controls if the robot is ready to compute the navigation. The response `std_msgs/Bool ready` is `true` if robot can move, `false` otherwise.
 
-*• `Goalresult.srv`* : checks the final goal status and final position of the robot respectively with the `std_msgs/Bool goal_status` and `geometry_msgs/PoseStamped goal_pose` responses.
+*• `srv/Goalresult.srv`* : checks the final goal status and final position of the robot respectively with the `std_msgs/Bool goal_status` and `geometry_msgs/PoseStamped goal_pose` responses.
 
 ### **• laser_scan**
 Technique to detect three cylindrical tables by clustering the points of laser scan and filtering them based on a range of acceptable distances.
@@ -37,9 +37,8 @@ Computes the coordinates of center and the four corners of two AprilTags relativ
 
 Provides data to the `navigation_node` in **navigation_package** to compute the final goal position.
 
-
 ### **• my_launch**
-Contains the main launch file `start_launch.xml` for system startup. It launches all single launch files:
+Contains the main launch file `launch/start_launch.xml` for system startup. It launches all single launch files:
 
 *1. `navigation_launch.xml`* : startups 2D pose estimate and Nav2 goal;
 
@@ -48,6 +47,8 @@ Contains the main launch file `start_launch.xml` for system startup. It launches
 *3. `assignment_1.launch.py`* : launches navigation and lifecycle client nodes;
 
 *4. `laser_launch.xml`* : processes the laser for table detection.
+
+`launch/start_launch_without_apriltag.xml` has the same functionality without stream messages.
 
 ### **• navigation_package**
 Implements the logic of navigation inside the simulated environment.
