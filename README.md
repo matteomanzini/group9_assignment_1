@@ -96,7 +96,7 @@ This package must be added inside `ros2_ws/src`.
 The final structure of workspace must be:
 
 ros2_ws<br>
-├── src<br>
+|- src<br>
 │    ├── group_assignment_1<br>
 │    │   ├── interfaces_assignment_1<br>
 │    │   ├── laser_scan<br>
