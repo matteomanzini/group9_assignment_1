@@ -96,19 +96,33 @@ This package must be added inside `ros2_ws/src`.
 The final structure of workspace must be:
 
 ros2_ws
+
 ├── src
+
 │   ├── group_assignment_1
+
 │   │   ├── interfaces_assignment_1
+
 │   │   ├── laser_scan
+
 │   │   ├── my_apriltag_ros
+
 │   │   ├── my_launch
+
 │   │   └── navigation_package
+
 │   └── ir_2526
+
 │       ├── apriltag_ros
+
 │       ├── ir_base
+
 │       ├── ir_description
+
 │       ├── ir_launch
+
 │       └── ir_movit_config
+
 </pre>
 
 ### Running
