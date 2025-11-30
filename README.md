@@ -55,7 +55,7 @@ Implements the logic of navigation inside the simulated environment.
 
 It contains two nodes: 
 
-• `lifecycle_client` sets the initial pose of robot and notifies the navigation_node if robot is ready to move with Ready.srv.
+• `lifecycle_client` sets the initial pose of robot and notifies the `navigation_node` if robot is ready to move with Ready.srv.
 
 • `navigation_node` computes the goal position (in the middle of apriltags) and startups the navigation until final goal is reached.
 
