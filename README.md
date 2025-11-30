@@ -109,7 +109,7 @@ ros2_ws
 │       ├── ir_description
 │       ├── ir_launch
 │       └── ir_movit_config
-
+</pre>
 
 ### Running
 
