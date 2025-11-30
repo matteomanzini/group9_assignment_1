@@ -38,26 +38,26 @@ Computes the coordinates of center and the four corners of two AprilTags relativ
 Provides data to the `navigation_node` in **navigation_package** to compute the final goal position.
 
 ### **• my_launch**
-Contains the main launch file `launch/start_launch.xml` for system startup. It launches all single launch files:
+Contains the main launch file *`launch/start_launch.xml`* for system startup. It launches all single launch files:
 
-*1. `navigation_launch.xml`* : startups 2D pose estimate and Nav2 goal;
+*1. `navigation_package/launch/navigation_launch.xml`* : startups 2D pose estimate and Nav2 goal;
 
-*2. `camera_36h11_launch.xml`* : initializes external camera and AprilTag detection;
+*2. `my_apriltag_ros/launch/camera_36h11_launch.xml`* : initializes external camera and AprilTag detection;
 
-*3. `assignment_1.launch.py`* : launches navigation and lifecycle client nodes;
+*3. `ir_2526/ir_launch/launch/assignment_1.launch.py`* : launches navigation and lifecycle client nodes;
 
-*4. `laser_launch.xml`* : processes the laser for table detection.
+*4. `laser_scan/launch/laser_launch.xml`* : processes the laser for table detection.
 
-`launch/start_launch_without_apriltag.xml` has the same functionality without stream messages.
+*`launch/start_launch_without_apriltag.xml`* has the same functionality without stream messages.
 
 ### **• navigation_package**
 Implements the logic of navigation inside the simulated environment.
 
 It contains two nodes: 
 
-*- lifecycle_client* sets the initial pose of robot and notifies the navigation_node if robot is ready to move with Ready.srv.
+• `lifecycle_client` sets the initial pose of robot and notifies the navigation_node if robot is ready to move with Ready.srv.
 
-*- navigation_node* computes the goal position (in the middle of apriltags) and startups the navigation until final goal is reached.
+• `navigation_node` computes the goal position (in the middle of apriltags) and startups the navigation until final goal is reached.
 
 Performs coordinate transformation in map frame to act the navigation in RViz2.
 
